@@ -6,6 +6,7 @@
 package trabalho_1;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -149,6 +150,7 @@ public class Painel extends javax.swing.JFrame {
         int min = 1;
         int max = 100;
         int maxAbs = 40, minAbs = 10, maxQuebra = 30, minQuebra = 5;
+        ArrayList<Long> podium = new ArrayList();
 
         jTextField1.setEditable(false);
         jTextField2.setEditable(false);
@@ -157,6 +159,11 @@ public class Painel extends javax.swing.JFrame {
 
         Carro[] carros = new Carro[Integer.parseInt(jTextField1.getText())];
 
+        //Gera a corrida e realiza as voltas
+        Corrida corrida = new Corrida();
+        corrida.setVoltas(Integer.parseInt(jTextField2.getText()));
+        corrida.setNumCarros(Integer.parseInt(jTextField1.getText()));
+        
         //Gera as probabilidades de abastecimento e quebra dos carros
         for (int i = 0; i < Integer.parseInt(jTextField1.getText()); i++) {
             Carro carro = new Carro();
@@ -168,61 +175,51 @@ public class Painel extends javax.swing.JFrame {
             carro.setAbs(abastecimento);
             carro.setQuebra(quebra);
             carro.setAvarias(0);
+            carro.setTextArea(jTextArea1);
+            carro.setCorrida(corrida);
+            carro.setPodium(podium);
 
             carros[i] = carro;
         }
+        
 
-        //Gera a corrida e realiza as voltas
-        Corrida corrida = new Corrida();
-        corrida.setVoltas(Integer.parseInt(jTextField2.getText()));
-        corrida.setNumCarros(Integer.parseInt(jTextField1.getText()));
-
-        //Mostra as estatisticas de cada carro
+        // Mostra as estatisticas de cada carro
         for (int k = 0; k < corrida.getNumCarros(); k++) {
-            jTextArea2.append(String.format("Carro " + carros[k].getId() + ": \n"));
+            jTextArea2.append(String.format("Carro " + carros[k].getCarId() + ": \n"));
             jTextArea2.append(String.format("Abastecimento " + carros[k].getProbAbs() + "%% \n"));
             jTextArea2.append(String.format("Conserto " + carros[k].getProbQuebra() + "%% \n"));
             jTextArea2.append(String.format("\n"));
         }
+        
+        
+        // Inicia as Threads dos carros para corrida
+        for (int i = 0; i < Integer.parseInt(jTextField1.getText()); i++) {
+            carros[i].start();
+        }
+        
+        // Função que fica verificando se a corrida terminou e forma o podium
+        new java.util.Timer().scheduleAtFixedRate(
+            new java.util.TimerTask() {
+            @Override
+            public void run() {
+                if(podium.size() == corrida.getNumCarros()){
+                jTextArea1.append("-------------PODIUM-------------- \n");
+                    
+                Collections.sort(podium);
+                 System.out.println("PODIUM " + podium);
 
-        for (int j = 1; j < corrida.getVoltas() + 1; j++) {
-            jTextArea1.append(String.format("Volta " + j + ": \n"));
-            for (int k = 0; k < corrida.getNumCarros(); k++) {
-                int abastecer = (int) (Math.random() * (max - min + 1) + min);
-                int quebrar = (int) (Math.random() * (max - min + 1) + min);
-
-                if (abastecer >= 1 && abastecer <= carros[k].getProbAbs() && quebrar >= 1 && quebrar <= carros[k].getProbQuebra()) {
-                    jTextArea1.append(String.format("Carro " + k + ": Abastecimento e Conserto \n"));
-                    int avarias = carros[k].getAvarias();
-                    carros[k].setAvarias(avarias + 2);
-                } else if (abastecer >= 1 && abastecer <= carros[k].getProbAbs()) {
-                    jTextArea1.append(String.format("Carro " + k + ": Abastecimento \n"));
-                    int avarias = carros[k].getAvarias();
-                    carros[k].setAvarias(avarias + 1);
-                } else if (quebrar >= 1 && quebrar <= carros[k].getProbQuebra()) {
-                    jTextArea1.append(String.format("Carro " + k + ": Conserto \n"));
-                    int avarias = carros[k].getAvarias();
-                    carros[k].setAvarias(avarias + 1);
-                } else {
-                    jTextArea1.append(String.format("Carro " + k + ": Continuou corrida \n"));
+                for(int j=1; j <= 3; j++){
+                    for(int i=0; i< corrida.getNumCarros(); i++){
+                        if(podium.get(j) == carros[i].getTempoCorrida()){
+                            //System.out.println("Carro " + carros[i].getCarId() + " Posição " + j);
+                            jTextArea1.append("Carro " + carros[i].getCarId() + " Posição " + j + "\n");
+                        }
+                    } 
+                }
+                cancel();
                 }
             }
-            jTextArea1.append(String.format("\n"));
-        }
-        jTextArea1.append(String.format("-----------------Fim da corrida----------------- \n"));
-        jTextArea1.append(String.format("Vencedores: \n"));
-        //Ordenar arrays para menor avaria ser ganhador
-        Arrays.sort(carros);
-
-        jTextArea1.append(String.format("Primeiro colocado: Carro " + carros[0].getId()) + "\n");
-        jTextArea1.append(String.format("Segundo colocado: Carro " + carros[1].getId()) + "\n");
-        jTextArea1.append(String.format("Terceiro colocado: Carro " + carros[2].getId()) + "\n");
-
-//        System.out.println(Arrays.toString(carros));
-//        System.out.println(carros[0]);
-//        System.out.println(carros[1]);
-//        System.out.println(carros[2]);
-
+        }, 500, 1000);
     }//GEN-LAST:event_jButton1MouseClicked
 
     private void jButton2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton2MouseClicked
