@@ -1,6 +1,8 @@
 package trabalho_1;
 
 import java.util.ArrayList;
+import javax.swing.JTextArea;
+import javax.swing.text.DefaultCaret;
 
 /**
  *
@@ -12,18 +14,22 @@ public class Carro extends Thread {
     private Integer probAbastecimento;
     private Integer probQuebra;
     Integer avarias;
-    private javax.swing.JTextArea jTextArea1;
+    private JTextArea jTextArea1;
     private Corrida corrida;
     private long tempoCorrida;
     private ArrayList<Long> podium;
 
-    public Carro() {
+    public Carro(Integer id, Integer probAbastecimento, Integer probQuebra, Integer avarias, Corrida corrida, JTextArea jTextArea1, ArrayList<Long> podium) {
         this.id = id;
         this.probAbastecimento = probAbastecimento;
         this.probQuebra = probQuebra;
         this.avarias = avarias;
         this.jTextArea1 = jTextArea1;
         this.corrida = corrida;
+        this.podium = podium;
+        
+        DefaultCaret caret = (DefaultCaret)jTextArea1.getCaret();
+        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
     }
 
 //    @Override
@@ -117,7 +123,7 @@ public class Carro extends Thread {
                 }else {
                     jTextArea1.append(String.format("Carro " + getCarId() + ": Continuou corrida \n"));
                     //System.out.println("Carro " + getCarId() + " continuou a corrida!");
-                }             
+                }
             }catch(InterruptedException err){
                 err.printStackTrace();
             }
